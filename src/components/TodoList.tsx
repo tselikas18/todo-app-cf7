@@ -3,8 +3,9 @@ import type {TodoListProps} from "../types.ts";
 import {useState} from "react";
 
 const TodoList = ({todos, dispatch}: TodoListProps) =>{
-const [editId, setEditId] = useState<number | null>(null);
-const [editText, setEditText] = useState("");
+
+    const [editId, setEditId] = useState<number | null>(null);
+    const [editText, setEditText] = useState("");
 
     const handleDelete = (id: number) => () => {
         dispatch({type: "DELETE", payload: id});
