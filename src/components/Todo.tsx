@@ -1,7 +1,12 @@
-import { useReducer } from 'react';
+import { useReducer, useEffect } from 'react';
 import TodoForm from "./TodoForm.tsx";
 import TodoList from "./TodoList.tsx";
 import type {TodoProps, Action} from "../types.ts";
+
+const getInitialTodos = () => {
+    const stored = localStorage.getItem("todos");
+    return stored ? JSON.parse(stored) : [];
+}
 
 const todoReducer = (state: TodoProps[], action: Action): TodoProps[] => {
     switch (action.type) {
@@ -26,6 +31,8 @@ const todoReducer = (state: TodoProps[], action: Action): TodoProps[] => {
             todo.id === action.payload
             ? {...todo, completed: !todo.completed}
             : todo)
+        case "CLEAR_ALL":
+            return [];
         default:
             return state;
     }
@@ -33,7 +40,18 @@ const todoReducer = (state: TodoProps[], action: Action): TodoProps[] => {
 
 const Todo = () =>{
 
-    const [todos, dispatch] = useReducer(todoReducer, []);
+    const [todos, dispatch] = useReducer(todoReducer, [], getInitialTodos);
+    const totalTasks: number = todos.length;
+    const completedTasks: number = todos.filter(t => t.completed).length;
+    const activeTasks: number = totalTasks - completedTasks;
+
+    useEffect(() => {
+        localStorage.setItem("todos", JSON.stringify(todos));
+    },[todos])
+
+    const handleClearAll = () => {
+        dispatch({type: "CLEAR_ALL"});
+    }
 
     return (
         <>
@@ -41,6 +59,25 @@ const Todo = () =>{
                 <h1 className="text-center text-2xl mb-4">To-Do List</h1>
                 <TodoForm dispatch={dispatch} />
                 <TodoList todos={todos} dispatch={dispatch} />
+
+                {todos.length > 0 && (
+                    <>
+                        <div className="flex items-center justify-between border-t pt-2 mt-4 text-cf-dark-gray">
+                            <span>Total: {totalTasks}</span>
+                            <span>Active: {activeTasks}</span>
+                            <span>Completed: {completedTasks}</span>
+                        </div>
+                        <div className="text-end mt-4">
+                            <button
+                                onClick={handleClearAll}
+                                className="bg-cf-dark-red text-white py-2 px-4 rounded"
+                            >
+                                Clear All
+                            </button>
+                        </div>
+                    </>
+                )
+                }
             </div>
         </>
     )
